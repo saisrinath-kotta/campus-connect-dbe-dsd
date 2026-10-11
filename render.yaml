@@ -38,5 +38,5 @@ databases:
   # 3. Managed PostgreSQL Database
   - name: campusconnect-db
     databaseName: campusconnect
-    user: postgres
+    user: campusconnect_user
     plan: free
