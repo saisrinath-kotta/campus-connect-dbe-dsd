@@ -11,8 +11,10 @@ DATABASE_URL = os.getenv(
     "postgresql+psycopg://postgres:postgres@localhost:5432/campusconnect"
 )
 
-# If standard postgresql:// is provided, support psycopg driver by default
-if DATABASE_URL.startswith("postgresql://"):
+# Support cloud deployment database URLs (e.g. Render/Supabase/Railway postgres:// or postgresql://)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 engine = create_engine(DATABASE_URL, echo=False)
