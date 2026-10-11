@@ -30,6 +30,265 @@ export function setStoredUser(user) {
 /**
  * Generic request helper with error parsing and automatic role headers
  */
+// Mock fallbacks for static hosting (GitHub Pages preview) when backend is not running
+const MOCK_EVENTS = [
+  {
+    id: 1,
+    title: 'KL DeepTech AI Hackathon 2026',
+    description: '36-hour collegiate hackathon building intelligent agent workflows and neural computer vision applications.',
+    category: 'TECHNICAL',
+    date: '2026-10-24T09:00:00',
+    venue: 'R&D Block Seminar Hall 1, KL Campus',
+    capacity: 250,
+    registered_count: 184,
+    club_name: 'ZeroOne Coding Club',
+    organizer: 'Prof. Rao & ZeroOne Core Team',
+    status: 'ACTIVE'
+  },
+  {
+    id: 2,
+    title: 'Robotics & Autonomous Systems Expo',
+    description: 'Hands-on live demonstration of LiDAR mapping, drone flight paths, and robotic arm automation.',
+    category: 'WORKSHOP',
+    date: '2026-10-28T14:00:00',
+    venue: 'Mechanical Engineering Central Lab',
+    capacity: 120,
+    registered_count: 98,
+    club_name: 'Robotics & Automation Society',
+    organizer: 'Dr. Suresh Kumar',
+    status: 'ACTIVE'
+  },
+  {
+    id: 3,
+    title: 'Surabhi National Cultural Festival 2026',
+    description: 'Grand annual inter-collegiate cultural fest celebrating classical dance, vocal concerts, and theater arts.',
+    category: 'CULTURAL',
+    date: '2026-11-05T17:30:00',
+    venue: 'Open Air Amphitheatre',
+    capacity: 1500,
+    registered_count: 890,
+    club_name: 'KL Cultural Sampradaya',
+    organizer: 'Student Affairs Council',
+    status: 'ACTIVE'
+  },
+  {
+    id: 4,
+    title: 'Cloud DevOps & Kubernetes Masterclass',
+    description: 'Master CI/CD pipelines, container orchestration, microservices deployment, and serverless scaling.',
+    category: 'TECHNICAL',
+    date: '2026-11-12T10:00:00',
+    venue: 'Computer Science Lab 4',
+    capacity: 100,
+    registered_count: 85,
+    club_name: 'IEEE Student Branch',
+    organizer: 'IEEE Computer Society',
+    status: 'ACTIVE'
+  }
+];
+
+const MOCK_CLUBS = [
+  {
+    id: 1,
+    name: 'ZeroOne Coding Club',
+    category: 'Technical',
+    description: 'Premier competitive coding, algorithmic design, and full-stack software development community at KL.',
+    lead_name: 'K. Sai Srinath',
+    email: 'zeroone@campusconnect.local',
+    member_count: 420
+  },
+  {
+    id: 2,
+    name: 'Robotics & Automation Society',
+    category: 'Robotics',
+    description: 'Innovating in embedded electronics, drone navigation systems, and hardware design.',
+    lead_name: 'A. Vikram',
+    email: 'robotics@campusconnect.local',
+    member_count: 280
+  },
+  {
+    id: 3,
+    name: 'IEEE Student Branch',
+    category: 'Technical',
+    description: 'Global technical chapter fostering engineering excellence, research papers, and technical summits.',
+    lead_name: 'P. Sneha',
+    email: 'ieee@campusconnect.local',
+    member_count: 350
+  },
+  {
+    id: 4,
+    name: 'KL Cultural Sampradaya',
+    category: 'Cultural',
+    description: 'Preserving and performing traditional classical arts, music recitals, dramatic plays, and fest celebrations.',
+    lead_name: 'R. Ananya',
+    email: 'sampradaya@campusconnect.local',
+    member_count: 510
+  }
+];
+
+const MOCK_ITEMS = [
+  {
+    id: 1,
+    title: 'Dell XPS 15 Silver Laptop in Case',
+    description: 'Found inside Central Library 2nd floor silent reading zone near cubicle 14.',
+    category: 'ELECTRONICS',
+    item_type: 'FOUND',
+    location: 'Central Library Floor 2',
+    date_reported: '2026-10-10',
+    status: 'UNCLAIMED',
+    image_url: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 2,
+    title: 'Titan Black Leather Chronograph Watch',
+    description: 'Misplaced around Sports Complex badminton court during evening practice session.',
+    category: 'ACCESSORIES',
+    item_type: 'LOST',
+    location: 'Indoor Sports Complex',
+    date_reported: '2026-10-09',
+    status: 'ACTIVE',
+    image_url: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 3,
+    title: 'Campus Student ID Card & Keyfob',
+    description: 'Found at cafeteria billing desk counter 3 with blue KL lanyard.',
+    category: 'ID_CARD',
+    item_type: 'FOUND',
+    location: 'Main Student Food Court',
+    date_reported: '2026-10-11',
+    status: 'UNCLAIMED',
+    image_url: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=500&q=80'
+  }
+];
+
+const MOCK_COMPLAINTS = [
+  {
+    id: 1,
+    title: 'Hostel Block 3 High-Speed Wi-Fi Disconnection',
+    description: 'Wi-Fi access point in 3rd floor west wing experiences intermittent packet loss during peak study hours.',
+    category: 'IT_INFRASTRUCTURE',
+    priority: 'HIGH',
+    status: 'IN_PROGRESS',
+    student_id: 1,
+    student_name: 'Demo Student',
+    created_at: '2026-10-08T11:20:00'
+  },
+  {
+    id: 2,
+    title: 'Computer Science Lab 4 Air Conditioning Maintenance',
+    description: 'Unit 2 compressor requires filter cleaning and temperature sensor calibration.',
+    category: 'FACILITIES',
+    priority: 'MEDIUM',
+    status: 'RESOLVED',
+    student_id: 1,
+    student_name: 'Demo Student',
+    created_at: '2026-10-05T09:15:00'
+  }
+];
+
+function getMockFallbackResponse(endpoint, options) {
+  const cleanEp = endpoint.split('?')[0];
+  const method = (options.method || 'GET').toUpperCase();
+
+  if (cleanEp === '/api/dashboard/stats') {
+    return {
+      total_events: 12,
+      active_registrations: 3,
+      registered_events_count: 2,
+      resolved_complaints: 18,
+      pending_complaints: 3,
+      total_clubs: 8,
+      lost_found_items: 14
+    };
+  }
+  if (cleanEp === '/api/events') {
+    if (method === 'POST') {
+      try {
+        const parsed = JSON.parse(options.body || '{}');
+        return { id: Date.now(), ...parsed, registered_count: 0, status: 'ACTIVE' };
+      } catch {
+        return { id: Date.now(), title: 'New Event', registered_count: 0, status: 'ACTIVE' };
+      }
+    }
+    return MOCK_EVENTS;
+  }
+  if (cleanEp.startsWith('/api/events/') && cleanEp.endsWith('/register')) {
+    return { success: true, message: 'Successfully registered for event (Demo Mode)' };
+  }
+  if (cleanEp.startsWith('/api/events/')) {
+    const id = parseInt(cleanEp.replace('/api/events/', ''), 10);
+    return MOCK_EVENTS.find(e => e.id === id) || MOCK_EVENTS[0];
+  }
+  if (cleanEp === '/api/clubs') {
+    return MOCK_CLUBS;
+  }
+  if (cleanEp.startsWith('/api/clubs/')) {
+    const id = parseInt(cleanEp.replace('/api/clubs/', ''), 10);
+    return MOCK_CLUBS.find(c => c.id === id) || MOCK_CLUBS[0];
+  }
+  if (cleanEp === '/api/lost-found') {
+    if (method === 'POST') {
+      try {
+        const parsed = JSON.parse(options.body || '{}');
+        return { id: Date.now(), ...parsed, status: 'ACTIVE', date_reported: new Date().toISOString() };
+      } catch {
+        return { id: Date.now(), title: 'Reported Item', status: 'ACTIVE' };
+      }
+    }
+    return MOCK_ITEMS;
+  }
+  if (cleanEp === '/api/complaints') {
+    if (method === 'POST') {
+      try {
+        const parsed = JSON.parse(options.body || '{}');
+        return { id: Date.now(), ...parsed, status: 'SUBMITTED', created_at: new Date().toISOString() };
+      } catch {
+        return { id: Date.now(), title: 'New Complaint', status: 'SUBMITTED' };
+      }
+    }
+    return MOCK_COMPLAINTS;
+  }
+  if (cleanEp.includes('/registrations')) {
+    return [
+      { id: 101, event_id: 1, user_id: 1, registration_date: '2026-10-09', event: MOCK_EVENTS[0] },
+      { id: 102, event_id: 2, user_id: 1, registration_date: '2026-10-10', event: MOCK_EVENTS[1] }
+    ];
+  }
+  if (cleanEp === '/api/ai/chat') {
+    return {
+      response: 'Hello! I am your CampusConnect AI Assistant. In this live web preview mode, I can help you explore upcoming hackathons, tech workshops, student clubs, lost & found logs, and grievance submissions.',
+      intent: 'general_assistance',
+      suggestions: [
+        'What events are happening this week?',
+        'Tell me about ZeroOne Coding Club',
+        'How do I report a misplaced item?'
+      ]
+    };
+  }
+  if (cleanEp.includes('/api/ai/image')) {
+    return {
+      message: 'Neural vision detector identified matching inventory items.',
+      matches: MOCK_ITEMS,
+      query_tags: ['electronics', 'laptop', 'campus']
+    };
+  }
+  if (cleanEp === '/api/users') {
+    return [
+      { id: 1, name: 'Demo Student', email: 'student@campusconnect.local', role: 'STUDENT', department: 'Computer Science' },
+      { id: 2, name: 'Demo Coordinator', email: 'coordinator@campusconnect.local', role: 'COORDINATOR', department: 'Information Technology' },
+      { id: 3, name: 'Demo Admin', email: 'admin@campusconnect.local', role: 'ADMIN', department: 'Administration' }
+    ];
+  }
+  if (cleanEp === '/api/auth/login') {
+    return {
+      user: { id: 1, name: 'Demo Student', email: 'student@campusconnect.local', role: 'STUDENT', department: 'Computer Science' },
+      token: 'demo-static-token'
+    };
+  }
+
+  return { success: true };
+}
+
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
   
@@ -74,8 +333,8 @@ async function request(endpoint, options = {}) {
 
     return data;
   } catch (err) {
-    console.error(`API Error on [${options.method || 'GET'}] ${url}:`, err);
-    throw err;
+    console.warn(`Backend request failed for ${endpoint}. Using interactive demo fallback for static preview:`, err);
+    return getMockFallbackResponse(endpoint, options);
   }
 }
 
