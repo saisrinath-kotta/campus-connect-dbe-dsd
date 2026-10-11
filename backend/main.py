@@ -52,6 +52,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+def on_startup():
+    """Ensure database schema is verified and tables exist upon boot."""
+    try:
+        from seed import init_database
+        init_database()
+    except Exception as e:
+        print(f"[STARTUP] Database init warning: {e}")
+
 api_router = APIRouter(prefix="/api")
 
 

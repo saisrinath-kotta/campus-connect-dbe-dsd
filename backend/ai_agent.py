@@ -24,8 +24,11 @@ from PIL import Image
 
 from models import User, Club, Event, EventRegistration, LostFoundItem
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Check for Gemini API Key
-GEMINI_API_KEY = os.environ.get("AIzaSyAUQufRgFR3LnX_qVvAmLVzg7MyTJIofkA", "").strip()
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
 gemini_client = None
 if GEMINI_API_KEY:
@@ -293,14 +296,14 @@ Database Context:
 User Question: {message}
 """
             response = gemini_client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=prompt
             )
             reply_text = response.text or "I am here to assist with campus events, clubs, registrations, and facilities."
             return {
                 "reply": reply_text,
                 "tools_used": tools_used,
-                "engine": "gemini-2.0-flash",
+                "engine": "gemini-2.5-flash",
                 "context_data": context_blob
             }
         except Exception as e:
@@ -1036,7 +1039,7 @@ Return ONLY valid JSON with this exact schema:
                 mime_type="image/jpeg"
             )
             response = gemini_client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=[prompt, image_part]
             )
             raw_text = response.text.strip()
@@ -1046,12 +1049,12 @@ Return ONLY valid JSON with this exact schema:
                 raw_text = raw_text[:-3]
             gemini_json = json.loads(raw_text.strip())
             detected_analysis.update(gemini_json)
-            engine_name = "gemini-2.0-flash-vision"
+            engine_name = "gemini-2.5-flash-vision"
         except Exception as e:
             print(f"[AI AGENT] Gemini Vision error, using local vision analysis: {e}")
 
     # Step 2: Local Computer Vision & Feature Classifier
-    if engine_name != "gemini-2.0-flash-vision":
+    if engine_name != "gemini-2.5-flash-vision":
         pil_info = analyze_image_with_pil(image_bytes) if image_bytes else {
             "dominant_colors": ["Silver / Gray"],
             "avg_brightness": 128,
