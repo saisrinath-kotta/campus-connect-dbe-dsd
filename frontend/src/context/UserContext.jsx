@@ -3,32 +3,35 @@ import { getUsers, loginUser, registerUser, getStoredUser, setStoredUser } from 
 
 const UserContext = createContext(null);
 
+const fallbackStudent = { id: 1, name: 'Demo Student', email: 'student@campusconnect.local', role: 'STUDENT', department: 'Computer Science' };
+const fallbackAdmin = { id: 3, name: 'Demo Admin', email: 'admin@campusconnect.local', role: 'ADMIN', department: 'Administration' };
+const defaultUsersList = [
+  fallbackStudent,
+  { id: 2, name: 'Demo Coordinator', email: 'coordinator@campusconnect.local', role: 'COORDINATOR', department: 'Information Technology' },
+  fallbackAdmin
+];
+
 export function UserProvider({ children }) {
-  const [users, setUsers] = useState([]);
-  const [currentUser, setCurrentUser] = useState(() => getStoredUser());
+  const [users, setUsers] = useState(defaultUsersList);
+  const [currentUser, setCurrentUser] = useState(() => {
+    const stored = getStoredUser();
+    return stored || fallbackStudent;
+  });
   const [activePortal, setActivePortal] = useState(() => {
     const stored = getStoredUser();
     return stored?.role === 'ADMIN' ? 'ADMIN' : 'STUDENT';
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const fetchUsers = async () => {
     try {
-      setLoading(true);
       const data = await getUsers();
-      setUsers(data);
+      if (Array.isArray(data) && data.length > 0) {
+        setUsers(data);
+      }
     } catch (err) {
-      console.warn('Could not fetch users from backend, using fallback demo users', err);
-      const fallbackStudent = { id: 1, name: 'Demo Student', email: 'student@campusconnect.local', role: 'STUDENT', department: 'Computer Science' };
-      const fallbackAdmin = { id: 3, name: 'Demo Admin', email: 'admin@campusconnect.local', role: 'ADMIN', department: 'Administration' };
-      setUsers([
-        fallbackStudent,
-        { id: 2, name: 'Demo Coordinator', email: 'coordinator@campusconnect.local', role: 'COORDINATOR', department: 'Information Technology' },
-        fallbackAdmin
-      ]);
-    } finally {
-      setLoading(false);
+      console.warn('Backend unavailable, using fallback demo users:', err);
     }
   };
 

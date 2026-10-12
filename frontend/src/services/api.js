@@ -349,7 +349,16 @@ function getMockFallbackResponse(endpoint, options) {
   return { success: true };
 }
 
+const isWebHosted = typeof window !== 'undefined' && 
+  window.location.hostname !== 'localhost' && 
+  window.location.hostname !== '127.0.0.1';
+
 async function request(endpoint, options = {}) {
+  // On live web deployment (GitHub Pages / Vercel) without remote backend, serve demo data immediately in 0ms
+  if (isWebHosted && (!import.meta.env.VITE_API_BASE_URL || API_BASE_URL.includes('127.0.0.1') || API_BASE_URL.includes('localhost'))) {
+    return getMockFallbackResponse(endpoint, options);
+  }
+
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
   
   // Attach user context headers if available
