@@ -127,37 +127,74 @@ const MOCK_CLUBS = [
 
 const MOCK_ITEMS = [
   {
+    item_id: 1,
     id: 1,
-    title: 'Dell XPS 15 Silver Laptop in Case',
-    description: 'Found inside Central Library 2nd floor silent reading zone near cubicle 14.',
-    category: 'ELECTRONICS',
-    item_type: 'FOUND',
+    item_name: 'AirPods Pro Case',
+    title: 'AirPods Pro Case',
+    description: 'White wireless earbuds case found in library silent study zone',
+    category: 'Electronics',
+    item_type: 'Found',
     location: 'Central Library Floor 2',
+    contact_info: 'security@campusconnect.local',
     date_reported: '2026-10-10',
-    status: 'UNCLAIMED',
+    status: 'Active',
+    image_url: 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=500&auto=format&fit=crop&q=60'
+  },
+  {
+    item_id: 2,
+    id: 2,
+    item_name: 'Dell XPS 15 Silver Laptop',
+    title: 'Dell XPS 15 Silver Laptop',
+    description: 'Found inside Central Library 2nd floor silent reading zone near cubicle 14.',
+    category: 'Electronics',
+    item_type: 'Found',
+    location: 'Central Library Floor 2',
+    contact_info: 'security@campusconnect.local',
+    date_reported: '2026-10-10',
+    status: 'Active',
     image_url: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=500&q=80'
   },
   {
-    id: 2,
+    item_id: 3,
+    id: 3,
+    item_name: 'Titan Black Leather Chronograph Watch',
     title: 'Titan Black Leather Chronograph Watch',
     description: 'Misplaced around Sports Complex badminton court during evening practice session.',
-    category: 'ACCESSORIES',
-    item_type: 'LOST',
+    category: 'Accessories',
+    item_type: 'Lost',
     location: 'Indoor Sports Complex',
+    contact_info: 'student@campusconnect.local',
     date_reported: '2026-10-09',
-    status: 'ACTIVE',
+    status: 'Active',
     image_url: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=500&q=80'
   },
   {
-    id: 3,
+    item_id: 4,
+    id: 4,
+    item_name: 'Campus Student ID Card & Keyfob',
     title: 'Campus Student ID Card & Keyfob',
     description: 'Found at cafeteria billing desk counter 3 with blue KL lanyard.',
-    category: 'ID_CARD',
-    item_type: 'FOUND',
+    category: 'ID Card',
+    item_type: 'Found',
     location: 'Main Student Food Court',
+    contact_info: 'helpdesk@campusconnect.local',
     date_reported: '2026-10-11',
-    status: 'UNCLAIMED',
+    status: 'Active',
     image_url: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    item_id: 5,
+    id: 5,
+    item_name: 'Blue Hydro Flask',
+    title: 'Blue Hydro Flask',
+    description: 'Insulated sports water bottle misplaced near student activity center',
+    category: 'Drinkware',
+    item_type: 'Lost',
+    location: 'Student Activity Center',
+    contact_info: 'student@campusconnect.local',
+    date_reported: '2026-10-11',
+    status: 'Active',
+    image_url: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&auto=format&fit=crop&q=60'
   }
 ];
 
@@ -267,9 +304,32 @@ function getMockFallbackResponse(endpoint, options) {
   }
   if (cleanEp.includes('/api/ai/image')) {
     return {
-      message: 'Neural vision detector identified matching inventory items.',
-      matches: MOCK_ITEMS,
-      query_tags: ['electronics', 'laptop', 'campus']
+      engine: 'Gemini Vision Multi-Modal AI',
+      analysis: {
+        item_name: 'AirPods Pro Case',
+        confidence: 0.94,
+        category: 'Electronics',
+        dominant_colors: ['White', 'Silver'],
+        distinguishing_features: ['Glossy white charging case', 'LED indicator light', 'Lightning charge port']
+      },
+      matches: [
+        {
+          match_score: 94,
+          match_reasons: ['High visual similarity with library item', 'Matching white earbuds case profile'],
+          match_reason: 'High visual and category match',
+          item: MOCK_ITEMS[0]
+        },
+        {
+          match_score: 74,
+          match_reasons: ['Electronics category overlap', 'Found in same campus library zone'],
+          match_reason: 'Category match in library zone',
+          item: MOCK_ITEMS[1]
+        }
+      ],
+      recommendations: [
+        'Check with Central Library Security Desk with serial number proof',
+        'Verify your student ID at the help desk counter to claim item'
+      ]
     };
   }
   if (cleanEp === '/api/users') {
